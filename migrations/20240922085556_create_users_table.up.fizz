@@ -1,0 +1,6 @@
+create_table("users") {
+  t.Column("email", "string", {"unique": true})
+  t.Column("password", "string", {})
+  t.Column("created_at", "timestamp", {})
+  t.Column("updated_at", "timestamp", {})
+}

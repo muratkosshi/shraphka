@@ -10,6 +10,8 @@ require (
 	github.com/gobuffalo/middleware v1.0.0
 	github.com/gobuffalo/pop/v6 v6.1.1
 	github.com/gobuffalo/suite/v4 v4.0.4
+	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/pkg/errors v0.9.1
 	github.com/unrolled/secure v1.15.0
 )
 

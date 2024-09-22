@@ -1,10 +1,10 @@
 ---
 development:
   dialect: postgres
-  database: sharaphka_development
+  database: sharaphka
   user: postgres
-  password: postgres
-  host: 127.0.0.1
+  password: password
+  host: 192.168.80.3
   pool: 5
 
 test:

@@ -1,44 +1,37 @@
-# This is a multi-stage Dockerfile and requires >= Docker 17.05
-# https://docs.docker.com/engine/userguide/eng-image/multistage-build/
+# Используем Buffalo-образ для сборки
 FROM gobuffalo/buffalo:v0.18.14 as builder
 
-ENV GOPROXY http://proxy.golang.org
+# Установка Node.js и Yarn через официальный Node.js образ
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get install -y nodejs yarn
 
+# Создаём директорию для приложения
 RUN mkdir -p /src/sharaphka
 WORKDIR /src/sharaphka
 
-# this will cache the npm install step, unless package.json changes
+# Добавляем package.json и yarn.lock перед установкой зависимостей
 ADD package.json .
-ADD yarn.lock .yarnrc.yml ./
-RUN mkdir .yarn
-COPY .yarn .yarn
+ADD yarn.lock .
+
+# Устанавливаем зависимости для фронтенда
 RUN yarn install
-# Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
-# cache deps before building and copying source so that we don't need to re-download as much
-# and so that source changes don't invalidate our downloaded layer
+
+# Копируем Go-зависимости и устанавливаем их
+COPY go.mod go.sum ./
 RUN go mod download
 
+# Копируем весь код
 ADD . .
+
+# Собираем Buffalo приложение
 RUN buffalo build --static -o /bin/app
 
+# Используем финальный минимальный образ на основе Alpine
 FROM alpine
-RUN apk add --no-cache bash
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache bash ca-certificates
 
 WORKDIR /bin/
-
 COPY --from=builder /bin/app .
 
-# Uncomment to run the binary in "production" mode:
-# ENV GO_ENV=production
-
-# Bind the app to 0.0.0.0 so it can be seen from outside the container
-ENV ADDR=0.0.0.0
-
-EXPOSE 3000
-
-# Uncomment to run the migrations before running the binary:
-# CMD /bin/app migrate; /bin/app
+# Запускаем приложение
 CMD exec /bin/app
